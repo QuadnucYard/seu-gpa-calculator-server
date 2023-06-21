@@ -50,12 +50,21 @@ async def visit(username: str = Form()):
     }
 
 
+@app.get("/auth")
+async def auth(user: User = Depends(get_current_user)):
+    ...
+
 @app.post("/auth/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), user: User = Depends(get_current_user)):
     if user:
         user.form["password"] = form_data.password
         return await api.login(user.session, user.form)
 
+
+@app.get("/query")
+async def query(user: User = Depends(get_current_user)):
+    if user:
+        return await api.get_grade_list(user.session)
 
 if __name__ == '__main__':
     uvicorn.run(  # type: ignore

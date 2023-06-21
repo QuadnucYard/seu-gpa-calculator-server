@@ -5,8 +5,7 @@ import orjson
 from bs4 import BeautifulSoup
 
 headers = {
-    "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36"
 }
 
 login_url = "https://newids.seu.edu.cn/authserver/login?goto=http://my.seu.edu.cn/index.portal"
@@ -44,7 +43,12 @@ async def login(ss: aiohttp.ClientSession, form: dict[str, Any]):
         return None
 
 
-async def getGradeList(ss: aiohttp.ClientSession):
+async def get_grade_list(ss: aiohttp.ClientSession):
+    print("get_grade_list")
     await ss.get("http://ehall.seu.edu.cn/appShow?appId=4768574631264620")
-    res = await ss.get("http://ehall.seu.edu.cn/jwapp/sys/cjcx/modules/cjcx/xscjcx.do")
-    return (await res.json(loads=orjson.loads))["datas"]["xscjcx"]
+    res0 = await ss.post("http://ehall.seu.edu.cn/jwapp/sys/cjcx/modules/cjcx/xscjcx.do", data={"*searchMeta": 1})
+    res = await ss.post("http://ehall.seu.edu.cn/jwapp/sys/cjcx/modules/cjcx/xscjcx.do")
+    return {
+        "model": (await res0.json(loads=orjson.loads))["searchMeta"],
+        "data": (await res.json(loads=orjson.loads))["datas"]["xscjcx"],
+    }
