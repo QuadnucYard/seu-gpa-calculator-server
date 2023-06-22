@@ -1,19 +1,20 @@
-import os
 import pathlib
+import tomllib
 
 import uvicorn
 from fastapi import Depends, FastAPI, Form
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse  # 响应html
 from fastapi.security import OAuth2PasswordRequestForm
-from pydantic import BaseModel
 
 import api
-from users import User, user_login, user_logout, get_current_user, users_db
+from users import User, user_login, user_logout, get_current_user
+
+cfg = tomllib.loads(pathlib.Path("config.toml").read_text())
 
 app = FastAPI()
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# app.mount("/dist", StaticFiles(directory=os.path.join(BASE_DIR, 'fastapi/dist')), name="dist")
-# app.mount("/assets", StaticFiles(directory=os.path.join(BASE_DIR, 'fastapi/dist/assets')), name="assets")
+BASE_DIR = pathlib.Path(".").absolute()
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 
 @app.get("/users/me")
@@ -23,19 +24,13 @@ async def read_users_me(current_user: User = Depends(get_current_user)):
 
 @app.get("/")
 def main():
-    html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dist', 'index.html')
-    html_content = ''
-    html_content = pathlib.Path(html_path).read_text()
-    return HTMLResponse(content=html_content, status_code=200)
+    html_content = pathlib.Path(BASE_DIR / "static" / "index.html").read_text()
+    return HTMLResponse(content=html_content)
 
 
 @app.get('/test')
 def test():
     return 'fastapi + vue3'
-
-
-class VisitModel(BaseModel):
-    username: str
 
 
 @app.post("/auth/visit")
@@ -81,15 +76,10 @@ async def query(user: User = Depends(get_current_user)):
         return await api.get_grade_list(user.session)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     uvicorn.run(  # type: ignore
-        app='main:app',
-        host="127.0.0.1",
-        port=8000,
+        app="main:app",
+        host=cfg["app"]["host"],
+        port=cfg["app"]["port"],
         reload=True,
     )
-"""
-grant_type: password
-username: 12345
-password: 12345
-"""
