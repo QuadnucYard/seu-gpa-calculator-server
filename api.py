@@ -49,6 +49,6 @@ async def get_grade_list(ss: aiohttp.ClientSession):
     res0 = await ss.post("http://ehall.seu.edu.cn/jwapp/sys/cjcx/modules/cjcx/xscjcx.do", data={"*searchMeta": 1})
     res = await ss.post("http://ehall.seu.edu.cn/jwapp/sys/cjcx/modules/cjcx/xscjcx.do")
     return {
-        "model": (await res0.json(loads=orjson.loads))["searchMeta"],
-        "data": (await res.json(loads=orjson.loads))["datas"]["xscjcx"],
+        "model": (await res0.json(loads=orjson.loads))["searchMeta"]["controls"],
+        "data": (await res.json(loads=orjson.loads))["datas"]["xscjcx"]["rows"],
     }
