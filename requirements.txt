@@ -5,3 +5,4 @@ orjson==3.9.1
 python_jose==3.3.0
 uvicorn==0.22.0
 python-multipart==0.0.6
+lxml==4.9.2

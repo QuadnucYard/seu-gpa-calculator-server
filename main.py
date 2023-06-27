@@ -2,9 +2,9 @@ import pathlib
 import tomllib
 
 import uvicorn
-from fastapi import Depends, FastAPI, Form
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse  # 响应html
+from fastapi import Depends, FastAPI, Form, Request, Response
+# from fastapi.staticfiles import StaticFiles
+# from fastapi.responses import HTMLResponse  # 响应html
 from fastapi.security import OAuth2PasswordRequestForm
 
 import api
@@ -12,25 +12,31 @@ from users import User, user_login, user_logout, get_current_user
 
 cfg = tomllib.loads(pathlib.Path("config.toml").read_text())
 
-app = FastAPI()
-BASE_DIR = pathlib.Path(".").absolute()
-app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+ROOT_PATH = "/api"
+app = FastAPI(root_path=ROOT_PATH, servers=[{"url": "gpa.quadnucyard.top"}])
+# BASE_DIR = pathlib.Path(".").absolute()
+# app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+
+
+@app.get('/test')
+def test(request: Request):
+    return {"message": 'fastapi + vue3', "root_path": request.scope.get("root_path")}
+
+
+@app.get('/{code}')
+def test_code(code: int):
+    return Response(status_code=code)
 
 
 @app.get("/users/me")
 async def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    return
 
 
-@app.get("/")
-def main():
-    html_content = pathlib.Path(BASE_DIR / "static" / "index.html").read_text()
-    return HTMLResponse(content=html_content)
-
-
-@app.get('/test')
-def test():
-    return 'fastapi + vue3'
+# @app.get("/")
+# def main():
+#     html_content = pathlib.Path(BASE_DIR / "static" / "index.html").read_text()
+#     return HTMLResponse(content=html_content)
 
 
 @app.post("/auth/visit")
@@ -82,4 +88,5 @@ if __name__ == "__main__":
         host=cfg["app"]["host"],
         port=cfg["app"]["port"],
         reload=True,
+        root_path=ROOT_PATH,
     )

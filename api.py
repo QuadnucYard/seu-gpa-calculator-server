@@ -1,3 +1,4 @@
+import logging
 from typing import Any, cast
 
 import aiohttp
@@ -9,7 +10,6 @@ headers = {
 }
 
 login_url = "https://newids.seu.edu.cn/authserver/login?goto=http://my.seu.edu.cn/index.portal"
-
 
 async def visit():
     ss = aiohttp.ClientSession(headers=headers)
@@ -34,12 +34,13 @@ async def login(ss: aiohttp.ClientSession, form: dict[str, Any]):
 
     res = await ss.get("http://ehall.seu.edu.cn/jsonp/userDesktopInfo.json")
     json_res = await res.json(loads=orjson.loads)
+    logger = logging.getLogger("uvicorn.access")
     try:
         name = json_res["userName"]
-        print(f"{name[0]}** 登陆成功！")
+        logger.info(f"{name[0]}** 登陆成功！")
         return json_res
     except Exception:
-        print("认证失败！")
+        logger.info("认证失败！")
         return None
 
 
